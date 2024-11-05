@@ -129,7 +129,7 @@
       - name: Upload built package to release
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./my-binary
           asset_name: my-binary
           asset_content_type: application/octet-stream
