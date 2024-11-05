@@ -130,6 +130,9 @@ jobs:
           name: my-package-artifacts
           path: ./dist
 
+      - name: List files in dist Directory before upload
+        run: ls -la ./dist
+
       - name: Create GitHub Release
         id: release
         uses: softprops/action-gh-release@v1
