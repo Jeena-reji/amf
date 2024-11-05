@@ -35,6 +35,12 @@ jobs:
 
       - name: List Output Directory
         run: ls -la dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: dist/my-artifact.txt
          
   docker-build:
     runs-on: ubuntu-latest
