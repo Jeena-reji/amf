@@ -29,9 +29,9 @@ jobs:
 
       - name: Build
         run: |
-         mkdir -p dist 
-         go build -o dist/my-package
-         tar -czvf dist/my-package.tar.gz -C dist my-package
+           mkdir -p dist 
+           go build -o dist/my-package
+           tar -czvf dist/my-package.tar.gz -C dist my-package
 
       - name: List files in dist Directory
         run: ls -la dist
@@ -149,7 +149,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
            upload_url: ${{ steps.release.outputs.upload_url }}
-           asset_path: dist/my-package.tar.gz
+           asset_path: ./dist/my-package.tar.gz
            asset_name: my-package.tar.gz 
            asset_content_type: application/gzip 
         env:
