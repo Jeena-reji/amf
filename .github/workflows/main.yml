@@ -33,6 +33,11 @@
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t my-binary:latest .
+
+      - name: Save Docker image to tar
+        run: docker save my-binary:latest -o mybinary.tar
 
       - name: Build Docker image
         run: make docker-build
@@ -126,6 +131,7 @@
           body: "Automated minor release based on workflow completion"
           files: |
             output/my-binary
+            my-binary.tar
             
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
