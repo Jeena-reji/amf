@@ -125,6 +125,7 @@ jobs:
     # New job for creating a release
     needs: [build, docker-build, staticcheck, lint, hadolint, license-check, fossa-check, unit-tests]
     runs-on: ubuntu-latest
+    if: github.event_name == 'release'
     steps:
       - uses: actions/checkout@v4
       - name: Create GitHub Release
