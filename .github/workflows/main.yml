@@ -33,6 +33,12 @@ jobs:
 
       - name: List files in dist Directory
         run: ls -la dist
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: my-package-artifacts
+          path: dist/
+        
 
   docker-build:
     runs-on: ubuntu-latest
@@ -118,6 +124,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: my-package-artifacts
+          path: ./dist
 
       - name: Create GitHub Release
         id: release
