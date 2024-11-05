@@ -35,7 +35,7 @@
       - uses: actions/checkout@v4
 
       - name: Build Docker image
-        run: docker build -t my-binary-image:latest .
+        run: make docker-build
 
   staticcheck:
     runs-on: ubuntu-latest
@@ -124,28 +124,14 @@
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           body: "Automated minor release based on workflow completion"
+          files: |
+            output/my-binary
+            
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload built package to release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./my-binary
-          asset_name: my-binary
-          asset_content_type: application/octet-stream
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push Docker image to GitHub Container Registry
-        run: |
-          docker tag my-binary-image:latest ghcr.io/${{ github.repository }}/my-binary-image:latest
-          docker push ghcr.io/${{ github.repository }}/my-binary-image:latest
+  
+          
 
 
 
