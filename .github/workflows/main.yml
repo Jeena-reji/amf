@@ -1,12 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2023 Canonical Ltd.
 # Copyright 2024 Intel Corporation
+ name: Main workflow
 
-
-
-name: Main workflow
-
-on:
+ on:
   pull_request:
     branches:
       - main
@@ -19,7 +16,7 @@ on:
       - created
       
 
-jobs:
+ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
@@ -30,23 +27,16 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Build
-        run: |
-           go build
-           mkdir -p dist
-           go build -o my-binary
-
-           tar -czvf dist/package.tar.gz my-binary
-           
+        run: go build -o my-binary
 
   docker-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-     
 
       - name: Build Docker image
-        run: make docker-build
-          
+        run: docker build -t my-binary-image:latest .
+
   staticcheck:
     runs-on: ubuntu-latest
     steps:
@@ -123,10 +113,8 @@ jobs:
         run: go test ./...
   create-release:
     # New job for creating a release
-  
     needs: [build, docker-build, staticcheck, lint, hadolint, license-check, fossa-check, unit-tests]
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
       - name: Create GitHub Release
@@ -135,7 +123,28 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           body: "Automated minor release based on workflow completion"
-          files: |
-           dist/package.tar.gz  
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload built package to release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ./my-binary
+          asset_name: my-binary
+          asset_content_type: application/octet-stream
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker image to GitHub Container Registry
+        run: |
+          docker tag my-binary-image:latest ghcr.io/${{ github.repository }}/my-binary-image:latest
+          docker push ghcr.io/${{ github.repository }}/my-binary-image:latest
+
+
+
