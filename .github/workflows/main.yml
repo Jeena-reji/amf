@@ -30,7 +30,13 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Build
-        run: go build
+        run: |
+           go build
+           mkdir -p dist
+           go build -o my-binary
+
+           tar -czvf dist/package.tar.gz my-binary
+           
 
   docker-build:
     runs-on: ubuntu-latest
