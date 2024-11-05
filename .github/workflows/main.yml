@@ -33,7 +33,7 @@ jobs:
          go build -o dist/my-package
          tar -czvf dist/my-package.tar.gz -C dist my-package
 
-      - name: List Output Directory
+      - name: List files in dist Directory
         run: ls -la dist
 
      
