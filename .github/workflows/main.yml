@@ -45,7 +45,7 @@ jobs:
      
 
       - name: Build Docker image
-        run: make docker-bulid
+        run: make docker-build
           
   staticcheck:
     runs-on: ubuntu-latest
