@@ -28,10 +28,10 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Build
-        run:
-         mkdir -p dist  
-         go build -o dist/my-package 
-
+        run: |
+         mkdir -p dist 
+         go build -o dist/my-package  
+         
   docker-build:
     runs-on: ubuntu-latest
     steps:
