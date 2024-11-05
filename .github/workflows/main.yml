@@ -141,10 +141,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Debug Dist Directory
-        run: |
-          echo "Contents of dist directory:"
-          ls -la dist
+     
 
 
       - name: Upload Package to Release
