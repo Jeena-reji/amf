@@ -124,5 +124,8 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           body: "Automated minor release based on workflow completion"
+          files: |
+           dist/*.tar.gz  
+           dist/*.whl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
