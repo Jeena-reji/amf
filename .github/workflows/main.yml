@@ -12,6 +12,11 @@ on:
     branches:
       - main
 
+  release:
+    types:
+      - created
+      
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -107,3 +112,17 @@ jobs:
 
       - name: Unit tests
         run: go test ./...
+  create-release:
+    # New job for creating a release
+    needs: [build, docker-build, staticcheck, lint, hadolint, license-check, fossa-check, unit-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: "Automated minor release based on workflow completion"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
