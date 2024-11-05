@@ -30,7 +30,8 @@ jobs:
       - name: Build
         run: |
          mkdir -p dist 
-         go build -o dist/my-package  
+         go build -o dist/my-package
+         tar -czvf dist/my-package.tar.gz -C dist my-package
          
   docker-build:
     runs-on: ubuntu-latest
