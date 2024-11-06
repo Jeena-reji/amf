@@ -28,7 +28,7 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Build
-        run: go build
+        run: go build -o ./build/my-binary 
 
   docker-build:
     runs-on: ubuntu-latest
@@ -122,7 +122,7 @@ jobs:
       - name: Build the package for release
         run: |
           mkdir -p release_assets
-          cp path/to/your/built-package release_assets/
+          cp ./build/my-binary release_assets/
 
       - name: Compress release assets
         run: tar -czf release_assets.tar.gz -C release_assets .
