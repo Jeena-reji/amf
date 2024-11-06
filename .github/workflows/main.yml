@@ -130,8 +130,8 @@ jobs:
     needs: [create-release]  
 
     env:
-      PACKAGE_REGISTRY: ghcr.io
-      PACKAGE_REPOSITORY: ios-mcn-core
+      REGISTRY: ghcr.io
+      DOCKER_REPOSITORY: ios-mcn-core/
       RELEASE_VERSION: 0.0.7
 
     steps:
