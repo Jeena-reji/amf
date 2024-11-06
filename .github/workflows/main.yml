@@ -170,6 +170,16 @@ jobs:
           username: ${{ secrets.GHCRUSER }}
           password: ${{ secrets.GHCR_END }}
 
+
+      - name: Build dummy Docker image
+        run: |
+          echo "FROM alpine:latest" > Dockerfile
+          docker build -t ghcr.io/${{ github.repository }}/dummy-image:latest .
+
+      - name: Push dummy Docker image
+        run: |
+          docker push ghcr.io/${{ github.repository }}/dummy-image:latest
+
       - name: Push Built Package
         run: |
           curl -X PUT -T "./myapp-${{ env.RELEASE_VERSION }}.tar.gz" \
