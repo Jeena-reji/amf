@@ -28,7 +28,7 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Build
-        run: go build  
+        run: go build -o ./build/my-binary 
 
   docker-build:
     runs-on: ubuntu-latest
