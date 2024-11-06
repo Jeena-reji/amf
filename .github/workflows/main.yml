@@ -125,7 +125,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-push-packages:
+  docker-build-push-images:
     runs-on: ubuntu-latest
     needs: [create-release]  
 
@@ -146,31 +146,13 @@ jobs:
       - name: Set Git SHA
         run: echo GIT_SHA_SHORT=$(git rev-parse --short HEAD) >> $GITHUB_ENV
 
-      - name: Clean Checksum
-        run: go mod tidy
-
-      
-
-    
-
-
-  docker-build-push-images:
-    runs-on: ubuntu-latest
-    needs: [create-release] 
-    env:
-      REGISTRY: ghcr.io
-      DOCKER_REGISTRY: ghcr.io/
-      DOCKER_REPOSITORY: ios-mcn-core
-      RELEASE_VERSION: 0.0.7
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3.2.0
         with:
-          go-version-file: 'go.mod'
-
-      - run: echo GIT_SHA_SHORT=$(git rev-parse --short HEAD) >> $GITHUB_ENV
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.GHCRUSER }}
+          password: ${{ secrets.GHCRPASS }}
+        
 
       - name: Clean Checksum
         run: go mod tidy
@@ -180,17 +162,13 @@ jobs:
           DOCKER_TAG: release-${{ env.RELEASE_VERSION }}
         run: |
           make docker-build
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3.2.0
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.GHCRUSER }}
-          password: ${{ secrets.GHCRPASS }}
-
-      - name: Push Docker image latest to GitHub
+      - name: Push Docker image latest to Github
         env:
-          DOCKER_TAG: release-${{ env.RELEASE_VERSION }}
+          DOCKER_TAG: release-${{ env.RELEASE_VERSION }} 
         run: |
           make docker-push
- 
+
+    
+
+
+  
