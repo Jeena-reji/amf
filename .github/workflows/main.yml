@@ -164,9 +164,9 @@ jobs:
           make docker-build
       - name: Push Docker image latest to Github
         env:
-          DOCKER_TAG: 
-        run: ${{ env.REGISTRY }}/${{ env.DOCKER_REPOSITORY }}:release-${{ env.RELEASE_VERSION }}|
-          make docker-push
+          DOCKER_TAG: ${{ env.REGISTRY }}/${{ env.DOCKER_REPOSITORY }}:release-${{ env.RELEASE_VERSION }}|
+          run: 
+            docker push $DOCKER_TAG
 
     
 
