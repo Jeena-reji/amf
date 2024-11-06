@@ -152,6 +152,16 @@ jobs:
          go build -o myapp  
          tar -czf myapp-${{ env.RELEASE_VERSION }}.tar.gz myapp
 
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read  
+      packages: write  
+    steps:
+      
+      - name: Check out repository
+        uses: actions/checkout@v2
+
       - name: Build Docker image
         env:
           REGISTRY: ghcr.io
@@ -171,14 +181,7 @@ jobs:
           password: ${{ secrets.GHCR_END }}
 
 
-      - name: Build dummy Docker image
-        run: |
-          echo "FROM alpine:latest" > Dockerfile
-          docker build -t ghcr.io/ios-mcn-core/amf/dummy-image:latest .
-
-      - name: Push dummy Docker image
-        run: |
-          docker push ghcr.io/ios-mcn-core/amf/dummy-image:latest
+     
 
       - name: Push Built Package
         run: |
