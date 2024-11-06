@@ -147,10 +147,10 @@ jobs:
       - name: Clean Checksum
         run: go mod tidy
 
-      - name: Build Package
+      - name: Build Docker image 
         run: |
          go build -o myapp  
-         tar -czf myapp-${{ env.RELEASE_VERSION }}.tar.gz myapp
+         docker build -t ghcr.io/${{ env.PACKAGE_REPOSITORY }}/myapp:${{ env.RELEASE_VERSION }} .
 
   build-and-push:
     runs-on: ubuntu-latest
@@ -170,7 +170,7 @@ jobs:
           RELEASE_VERSION: 0.0.7
           DOCKER_TAG: release-${{ env.RELEASE_VERSION }}
         run: |
-          docker build -t 5gc-amf:${{ env.DOCKER_TAG }} .
+          docker build -t ghcr.io/${{ env.PACKAGE_REPOSITORY }}/myapp:${{ env.DOCKER_TAG }} .
           make docker-build
 
       - name: Log in to GitHub Container Registry
@@ -183,14 +183,11 @@ jobs:
 
      
 
-      - name: Push Built Package
-        run: |
-          curl -X PUT -T "./myapp-${{ env.RELEASE_VERSION }}.tar.gz" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://upload.github.com/repos/${{ github.repository }}/releases/assets?name=myapp-${{ env.RELEASE_VERSION }}.tar.gz"
-      -  name: Push Docker image latest to Github
+     
+            
+      -  name: Push Docker image latest to Github Container Registry
          env:
            DOCKER_TAG: release-${{ env.RELEASE_VERSION }} 
          run: |
-            docker push ghcr.io/${{ env.PACKAGE_REPOSITORY }}/5gc-amf:${{ env.DOCKER_TAG }}
+            docker push ghcr.io/${{ env.PACKAGE_REPOSITORY }}/myapp:${{ env.DOCKER_TAG }}
             make docker-push
