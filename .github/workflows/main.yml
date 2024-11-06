@@ -156,7 +156,7 @@ jobs:
         with:
           registry: ${{ env.PACKAGE_REGISTRY }}
           username: ${{ secrets.jeena-reji }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GHCR_END }}
 
       - name: Push Built Package
         run: |
