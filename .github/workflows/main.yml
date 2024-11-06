@@ -160,6 +160,7 @@ jobs:
           RELEASE_VERSION: 0.0.7
           DOCKER_TAG: release-${{ env.RELEASE_VERSION }}
         run: |
+          docker build -t 5gc-amf:${{ env.DOCKER_TAG }} .
           make docker-build
 
       - name: Log in to GitHub Container Registry
@@ -178,4 +179,5 @@ jobs:
          env:
            DOCKER_TAG: release-${{ env.RELEASE_VERSION }} 
          run: |
+            docker push ghcr.io/${{ env.PACKAGE_REPOSITORY }}/5gc-amf:${{ env.DOCKER_TAG }}
             make docker-push
