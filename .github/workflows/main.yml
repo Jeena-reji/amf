@@ -170,7 +170,7 @@ jobs:
           RELEASE_VERSION: 0.0.7
           DOCKER_TAG: release-${{ env.RELEASE_VERSION }}
         run: |
-          docker build -t ghcr.io/${{ env.PACKAGE_REPOSITORY }}/myapp:${{ env.DOCKER_TAG }} .
+          docker build -t ${{ env.REGISTRY }}/${{ env.PACKAGE_REPOSITORY }}/myapp:${{ env.DOCKER_TAG }} .
           make docker-build
 
       - name: Log in to GitHub Container Registry
