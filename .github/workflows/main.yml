@@ -131,7 +131,7 @@ jobs:
 
     env:
       REGISTRY: ghcr.io
-      DOCKER_REPOSITORY: ios-mcn-core
+      DOCKER_REPOSITORY: ios-mcn-core/myapp
       RELEASE_VERSION: 0.0.7
 
     steps:
@@ -159,7 +159,7 @@ jobs:
 
       - name: Build Docker image
         env:
-          DOCKER_TAG: ${{ env.REGISTRY }}/${{ env.DOCKER_REPOSITORY }}:release-${{ env.RELEASE_VERSION }}
+          DOCKER_TAG: ${{ env.REGISTRY }}/${{ env.DOCKER_REPOSITORY }}:release-${{ env.RELEASE_VERSION }} .
         run: |
           make docker-build
       - name: Push Docker image latest to Github
