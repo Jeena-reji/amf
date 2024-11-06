@@ -131,7 +131,7 @@ jobs:
 
     env:
       REGISTRY: ghcr.io
-      DOCKER_REPOSITORY: ios-mcn-core/
+      DOCKER_REPOSITORY: ios-mcn-core/myapp
       RELEASE_VERSION: 0.0.7
 
     steps:
