@@ -149,7 +149,7 @@ jobs:
 
       - name: Build Package
         run: |
-         go build -o myapp  # Replace with your actual build command
+         go build -o myapp  
          tar -czf myapp-${{ env.RELEASE_VERSION }}.tar.gz myapp
 
       - name: Log in to GitHub Container Registry
