@@ -82,7 +82,8 @@ docker-build:
 			|| exit 1; \
 	done
 	rm -rf vendor
-
+docker-build:
+    docker build -t $(PACKAGE_REGISTRY)/$(PACKAGE_REPOSITORY)/5gc-amf:$(DOCKER_TAG) .
 docker-push:
 	for target in $(DOCKER_TARGETS); do \
 		docker push ${DOCKER_REGISTRY}${DOCKER_REPOSITORY}5gc-$$target:${DOCKER_TAG}; \
