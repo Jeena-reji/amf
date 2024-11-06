@@ -26,9 +26,8 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Build
-        run: |
-          go build -o myapp
-          tar -czf myapp-${{ env.RELEASE_VERSION }}.tar.gz myapp
+        run: go build
+          
 
   docker-build:
     runs-on: ubuntu-latest
@@ -162,6 +161,6 @@ jobs:
 
       - name: Push Built Package
         run: |
-          curl -X PUT -T "./path/to/your/package-${{ env.RELEASE_VERSION }}.tar.gz" \
+          curl -X PUT -T "./myapp-${{ env.RELEASE_VERSION }}.tar.gz" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://upload.github.com/repos/${{ github.repository }}/releases/assets?name=package-${{ env.RELEASE_VERSION }}.tar.gz"
+            "https://upload.github.com/repos/${{ github.repository }}/releases/assets?name=myapp-${{ env.RELEASE_VERSION }}.tar.gz"
