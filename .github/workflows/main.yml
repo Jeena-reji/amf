@@ -30,7 +30,7 @@ jobs:
       - name: Build
         run: |
          mkdir -p ./build 
-         go build -o ./build/my-binary 
+         go.mod -o ./build/my-binary 
 
   docker-build:
     runs-on: ubuntu-latest
