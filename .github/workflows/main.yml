@@ -152,6 +152,12 @@ jobs:
          go build -o myapp  
          tar -czf myapp-${{ env.RELEASE_VERSION }}.tar.gz myapp
 
+      - name: Build Docker image
+        env:
+          DOCKER_TAG: release-${{ env.RELEASE_VERSION }}
+        run: |
+          make docker-build
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3.2.0
         with:
@@ -164,3 +170,8 @@ jobs:
           curl -X PUT -T "./myapp-${{ env.RELEASE_VERSION }}.tar.gz" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://upload.github.com/repos/${{ github.repository }}/releases/assets?name=myapp-${{ env.RELEASE_VERSION }}.tar.gz"
+      -  name: Push Docker image latest to Github
+         env:
+           DOCKER_TAG: release-${{ env.RELEASE_VERSION }} 
+         run: |
+            make docker-push
