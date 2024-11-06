@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2023 Canonical Ltd.
 # Copyright 2024 Intel Corporation
- name: Main workflow
 
- on:
+name: Main workflow
+
+on:
   pull_request:
     branches:
       - main
@@ -16,7 +17,7 @@
       - created
       
 
- jobs:
+jobs:
   build:
     runs-on: ubuntu-latest
     steps:
@@ -27,19 +28,12 @@
           go-version-file: 'go.mod'
 
       - name: Build
-        run: go build -o my-binary
+        run: go build
 
   docker-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build Docker image
-        run: docker build -t my-binary:latest .
-
-      - name: Save Docker image to tar
-        run: docker save my-binary:latest -o mybinary.tar
-
-      
 
       - name: Build Docker image
         run: make docker-build
@@ -124,21 +118,33 @@
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Build the package for release
+        run: |
+          mkdir -p release_assets
+          cp path/to/your/built-package release_assets/
+
+      - name: Compress release assets
+        run: tar -czf release_assets.tar.gz -C release_assets .
+
       - name: Create GitHub Release
-        id: create_release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           body: "Automated minor release based on workflow completion"
-          files: |
-            output/my-binary
-            my-binary.tar
-            
+          files: release_assets.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}    
 
   
+
+  
+ 
+  
+       
+      
+        
           
 
 
