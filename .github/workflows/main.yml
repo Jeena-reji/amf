@@ -28,7 +28,7 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Build
-        run: go build -o ./build/my-binary 
+        run: go build  
 
   docker-build:
     runs-on: ubuntu-latest
@@ -135,10 +135,26 @@ jobs:
           body: "Automated minor release based on workflow completion"
           files: release_assets.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}    
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  
 
+      - name: Docker Login
+        uses: docker/login-action@v3.2.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.GHCRUSER }}
+          password: ${{ secrets.GHCRPASS }}
+
+      - name: Build Docker image
+        env:
+          DOCKER_TAG: release-${{ env.RELEASE_VERSION }}
+        run: |
+          make docker-build
+      - name: Push Docker image to GitHub
+        env:
+          DOCKER_TAG: release-${{ env.RELEASE_VERSION }}
+        run: |
+          make docker-push
   
  
   
