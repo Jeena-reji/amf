@@ -152,13 +152,33 @@ jobs:
          go build -o myapp  
          docker build -t ghcr.io/${{ env.PACKAGE_REPOSITORY }}/myapp:${{ env.RELEASE_VERSION }} .
 
+
+    
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCRUSER }}
+          password: ${{ secrets.GHCR_END }}
+
+
+     
+
+     
+            
+      -  name: Push Docker image latest to Github Container Registry
+         run: |
+            docker push ghcr.io/${{ env.PACKAGE_REPOSITORY }}/myapp:${{ env.RELEASE_VERSION }}
+            make docker-push
+
+
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: read  
       packages: write  
     steps:
-      
       - name: Check out repository
         uses: actions/checkout@v2
 
@@ -180,14 +200,7 @@ jobs:
           username: ${{ secrets.GHCRUSER }}
           password: ${{ secrets.GHCR_END }}
 
-
-     
-
-     
-            
-      -  name: Push Docker image latest to Github Container Registry
-         env:
-           DOCKER_TAG: release-${{ env.RELEASE_VERSION }} 
-         run: |
-            docker push ghcr.io/${{ env.PACKAGE_REPOSITORY }}/myapp:${{ env.DOCKER_TAG }}
-            make docker-push
+      - name: Push Docker image latest to GitHub Container Registry
+        run: |
+          docker push ghcr.io/${{ env.PACKAGE_REPOSITORY }}/myapp:${{ env.DOCKER_TAG }}
+          make docker-push
