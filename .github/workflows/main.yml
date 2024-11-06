@@ -26,7 +26,9 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Build
-        run: go build
+        run: |
+          go build -o myapp
+          tar -czf myapp-${{ env.RELEASE_VERSION }}.tar.gz myapp
 
   docker-build:
     runs-on: ubuntu-latest
