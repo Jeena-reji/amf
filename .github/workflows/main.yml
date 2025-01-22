@@ -1,44 +1,14 @@
-# SPDX-License-Identifier: Apache-2.0
-# Copyright 2023 Canonical Ltd.
-# Copyright 2024 Intel Corporation
-
-name: Main workflow
+name: IOSMCN Master workflow
 
 on:
   pull_request:
     branches:
-      - main
+      - iosmcnmaster
   push:
     branches:
-      - main
-  release:
-    types:
-      - created
+      - iosmcnmaster
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: 'go.mod'
-
-      - name: Build
-        run: go build
-          
-
-  docker-build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build Docker image
-        run: |
-          docker build -t ghcr.io/${{ env.PACKAGE_REPOSITORY }}/myapp:${{ env.RELEASE_VERSION }} .
-          make docker-build
-
   staticcheck:
     runs-on: ubuntu-latest
     steps:
@@ -52,25 +22,57 @@ jobs:
         with:
           version: latest
           install-go: false
+          output-format: json  # Change the output format to JSON
 
+      - name: Generate Staticcheck Summary
+        run: |
+          # After staticcheck completes, parse the JSON report
+          staticcheck -f=json ./... > staticcheck-report.json
+          
+          # Use jq to extract the desired summary (e.g., number of projects scanned, succeeded, etc.)
+          projects_scanned=$(jq 'length' staticcheck-report.json)
+          failed_projects=$(jq '[.[] | select(.status == "failed")] | length' staticcheck-report.json)
+          succeeded_projects=$(jq '[.[] | select(.status == "passed")] | length' staticcheck-report.json)
+          skipped_projects=$(jq '[.[] | select(.status == "skipped")] | length' staticcheck-report.json)
+          warnings=$(jq '[.[] | select(.status == "warning")] | length' staticcheck-report.json)
+
+          echo "Projects Scanned: $projects_scanned"
+          echo "Projects Failed: $failed_projects"
+          echo "Projects Succeeded: $succeeded_projects"
+          echo "Projects Skipped: $skipped_projects"
+          echo "Analysis Warnings: $warnings"
+
+          # Optionally, save a concise summary to a file
+          echo "$projects_scanned projects scanned; $skipped_projects skipped, $succeeded_projects succeeded, $failed_projects failed, $warnings analysis warnings" > staticcheck-summary.txt
+
+          # Upload the detailed staticcheck report and summary as artifacts
+          upload-artifact -name staticcheck-report -path staticcheck-report.json
+          upload-artifact -name staticcheck-summary -path staticcheck-summary.txt
+          
   lint:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'ios-mcn-core'
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
+      
+      - name: Clean Checksum
+        run: go mod tidy
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6.1.1
+        uses: golangci/golangci-lint-action@v6.1.0
         with:
           version: latest
-          args: -v --config ./.golangci.yml
+          args: -v --config ./.golangci.yml --timeout=10m
 
   hadolint:
     name: hadolint
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'ios-mcn-core'
+
     steps:
       - uses: actions/checkout@v4
 
@@ -82,6 +84,7 @@ jobs:
 
   license-check:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'ios-mcn-core'
     steps:
       - uses: actions/checkout@v4
 
@@ -90,6 +93,7 @@ jobs:
 
   fossa-check:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'ios-mcn-core'
     steps:
       - uses: actions/checkout@v4
 
@@ -100,75 +104,58 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'ios-mcn-core'
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
+      
+      - name: Clean Checksum
+        run: go mod tidy
 
       - name: Unit tests
         run: go test ./...
 
-  create-release:
-    # This job will now depend on all previous jobs, including the package build and push job
-    needs: [build, docker-build, staticcheck, lint, hadolint, license-check, fossa-check, unit-tests]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          body: "Automated minor release based on workflow completion"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   docker-build-push-images:
     runs-on: ubuntu-latest
-    needs: [create-release]  
+    if: github.repository_owner == 'ios-mcn-core'
+    needs: unit-tests
 
     env:
       REGISTRY: ghcr.io
-      DOCKER_REPOSITORY: ios-mcn-core/myapp
-      RELEASE_VERSION: 0.0.7
-
+      DOCKER_REGISTRY: ghcr.io/
+      DOCKER_REPOSITORY: ios-mcn-core/
+      
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
+      
+      - name: Clean Checksum
+        run: go mod tidy
 
-      - name: Set Git SHA
-        run: echo GIT_SHA_SHORT=$(git rev-parse --short HEAD) >> $GITHUB_ENV
+      - run: echo GIT_SHA_SHORT=$(git rev-parse --short HEAD) >> $GITHUB_ENV
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3.2.0
+      - uses: docker/login-action@v3.1.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.GHCRUSER }}
           password: ${{ secrets.GHCRPASS }}
-        
 
-      - name: Clean Checksum
-        run: go mod tidy
-
-      - name: Build Docker image
+      - name: Build and push "master-latest" Docker image
         env:
-          DOCKER_TAG: ${{ env.REGISTRY }}/${{ env.DOCKER_REPOSITORY }}:release-${{ env.RELEASE_VERSION }} .
+          DOCKER_TAG: master-latest
         run: |
           make docker-build
-      - name: Push Docker image latest to Github
+          make docker-push
+
+      - name: Build and push "master-GIT_SHA" Docker image
         env:
-          DOCKER_TAG: ${{ env.REGISTRY }}/${{ env.DOCKER_REPOSITORY }}:release-${{ env.RELEASE_VERSION }}|
-          run: 
-            docker push $DOCKER_TAG
-
-    
-
-
-  
+          DOCKER_TAG: master-${{ env.GIT_SHA_SHORT }}
+        run: |
+          make docker-build
+          make docker-push
